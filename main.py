@@ -55,17 +55,19 @@ class CameraPreview(Image):
         eyes = self.eye_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
 
         for (x, y, w, h) in eyes:
-            cv2.rectangle(self.frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            x1, y1, w1, h1 = x - w // 6, y + h // 4, w + 2 * (w // 6), h - 2 * (h // 4)
 
             # Область глаза
-            eye_roi = self.frame[y:y + h, x:x + w]
+            eye_roi = self.frame[y1: y1 + h1, x1: x1 + w1]
 
             # Нахождение самого темного пикселя внутри глаза
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cv2.cvtColor(eye_roi, cv2.COLOR_BGR2GRAY))
-
+            if min_loc[0] < 2 or min_loc[1] < 2 or min_loc[0] > w - 2 or min_loc[1] > h - 2:
+                continue
             # Отображение зрачка как красная точка
-            cv2.circle(self.frame, (int(min_loc[0] + x), int(min_loc[1] + y)), 2, (0, 0, 255), 2)
 
+            cv2.rectangle(self.frame, (x1, y1), (x1 + w1, y1 + h1), (255, 0, 0), 2)
+            cv2.circle(self.frame, (int(min_loc[0] + x1), int(min_loc[1] + y1)), 2, (0, 0, 255), 2)
 
 if __name__ == '__main__':
     MyCameraApp().run()
