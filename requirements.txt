@@ -1,0 +1,6 @@
+numpy >= 1.22.0
+dlib >= 19.16.0
+
+opencv-python>=4.9.0.80
+Kivy>=2.3.0
+scipy
