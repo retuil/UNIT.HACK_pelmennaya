@@ -74,7 +74,8 @@ class CameraPreview(Image):
     def update_points(self, instance, width, height):
         self.points = [(30, 30), (width - 30, 30), (30, height - 30), (width - 30, height - 30)]
 
-    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+
+    def on_click(self):
         if self.is_calibration:
             p = self.w[0]
             t1 = self.gaze.horizontal_ratio()
@@ -95,6 +96,15 @@ class CameraPreview(Image):
                     self.h1.append((t3 / len(self.h[i]), t4 / len(self.h[i])))
                 self.d = []
                 self.is_calibration = False
+
+
+    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        self.on_click()
+
+
+    def _on_touch_down(self):
+        self.on_click()
+
 
     def _keyboard_closed(self):
         self._keyboard.unbind(on_key_down=self._on_keyboard_down)
@@ -117,8 +127,8 @@ class CameraPreview(Image):
 
         left_pupil = self.gaze.pupil_left_coords()
         right_pupil = self.gaze.pupil_right_coords()
-        cv2.putText(self.frame, "Left pupil:  " + str(left_pupil), (90, 130), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
-        cv2.putText(self.frame, "Right pupil: " + str(right_pupil), (90, 165), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
+        # cv2.putText(self.frame, "Left pupil:  " + str(left_pupil), (90, 130), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
+        # cv2.putText(self.frame, "Right pupil: " + str(right_pupil), (90, 165), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
 
     def update(self, dt):
         _, self.frame = self.capture.read()
