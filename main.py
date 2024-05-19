@@ -8,6 +8,8 @@ from gaze_tracking import GazeTracking
 from scipy.linalg import solve
 from kivy.core.window import Window
 import numpy as np
+import csv
+from datetime import datetime
 
 class MainScreen(Widget):
     pass
@@ -27,8 +29,23 @@ class CameraPreview(Image):
     h1 = []
     d = []
 
+    def save_boundary_points(self, file_name, boundary_points):
+        with open(file_name, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['Границы', 'x', 'y', 'time'])
+            for i, point in enumerate(boundary_points):
+                writer.writerow([i, point[0], point[1], "---"])
+            writer.writerow(['Точка', 'x', 'y', 'time'])
+
+    def save_point_to_csv(self, x, y, file_name):
+        with open(file_name, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['-', x, y, datetime.now()])
+
+
     def draw_calibration_point(self, f, point, r=10):
         cv2.circle(f, point, r, (0, 0, 255), -1)
+
 
     def transform_point(self, quadrilateral_points, rectangle_points, inner_point):
         A = np.array([
@@ -67,6 +84,9 @@ class CameraPreview(Image):
 
         # Set drawing interval
         Clock.schedule_interval(self.update, 1.0 / 30)
+
+        self.file_name = rf"point_data\{datetime.now().date()}_{datetime.now().time().hour}-{datetime.now().time().minute}.csw"
+        self.save_boundary_points(self.file_name, self.points)
 
         # Обновить координаты калибровочных точек в зависимости от размеров окна
         Window.bind(on_resize=self.update_points)
@@ -121,12 +141,12 @@ class CameraPreview(Image):
                 self.d.pop(0)
             pi = (sum(map(lambda x: x[0], self.d)) / len(self.d), sum(map(lambda x: x[1], self.d)) / len(self.d))
             x0, y0 = self.transform_point(self.h1, self.points, pi)
-            print(pi, (x0, y0))
+            self.save_point_to_csv(x0, y0, self.file_name)
 
             self.draw_calibration_point(self.frame, (int(x0), int(y0)), 25)
 
-        left_pupil = self.gaze.pupil_left_coords()
-        right_pupil = self.gaze.pupil_right_coords()
+        # left_pupil = self.gaze.pupil_left_coords()
+        # right_pupil = self.gaze.pupil_right_coords()
         # cv2.putText(self.frame, "Left pupil:  " + str(left_pupil), (90, 130), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
         # cv2.putText(self.frame, "Right pupil: " + str(right_pupil), (90, 165), cv2.FONT_HERSHEY_DUPLEX, 0.9, (147, 58, 31), 1)
 
